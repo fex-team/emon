@@ -1,76 +1,24 @@
 
 (function () {
-    var URL = window.MDEDITOR_HOME_URL || getMDBasePath();
+    var URL = window.EMON_HOME_URL || getBaseBir();
 
-    window.MDEDITOR_CONFIG = {
+    window.EMON_CONFIG = {
 
-        MDEDITOR_HOME_URL: URL
-        , toolbars: [
-            'fullscreen', 'undo', 'redo', 'bold', 'italic', 'strikethrough', 'image',
-            'insertorderedlist', 'insertunorderedlist', 'link', 'drafts'
-        ]
+        EMON_HOME_URL: URL
 
     };
 
-    function getMDBasePath(docUrl, confUrl) {
+    function getBaseBir(){
+        var srcipts = document.getElementsByTagName('script'),
+            src = srcipts[srcipts.length - 1].src;
 
-        return getBasePath(docUrl || self.document.URL || self.location.href, confUrl || getConfigFilePath());
-
-    }
-
-    function getConfigFilePath() {
-
-        var configPath = document.getElementsByTagName('script');
-
-        return configPath[ configPath.length - 1 ].src;
-
-    }
-
-    function getBasePath(docUrl, confUrl) {
-
-        var basePath = confUrl;
-
-
-        if (/^(\/|\\\\)/.test(confUrl)) {
-
-            basePath = /^.+?\w(\/|\\\\)/.exec(docUrl)[0] + confUrl.replace(/^(\/|\\\\)/, '');
-
-        } else if (!/^[a-z]+:/i.test(confUrl)) {
-
-            docUrl = docUrl.split("#")[0].split("?")[0].replace(/[^\\\/]+$/, '');
-
-            basePath = docUrl + "" + confUrl;
-
+        if (src) {
+            var a = document.createElement('a');
+            a.href = src;
+            a.href = a.href;
+            return a.protocol + '//' + a.host + a.pathname.substr(0, a.pathname.lastIndexOf('/') + 1);
         }
-
-        return optimizationPath(basePath);
-
-    }
-
-    function optimizationPath(path) {
-
-        var protocol = /^[a-z]+:\/\//.exec(path)[ 0 ],
-            tmp = null,
-            res = [];
-
-        path = path.replace(protocol, "").split("?")[0].split("#")[0];
-
-        path = path.replace(/\\/g, '/').split(/\//);
-
-        path[ path.length - 1 ] = "";
-
-        while (path.length) {
-
-            if (( tmp = path.shift() ) === "..") {
-                res.pop();
-            } else if (tmp !== ".") {
-                res.push(tmp);
-            }
-
-        }
-
-        return protocol + res.join("/");
-
+        return '';
     }
 
 })();
