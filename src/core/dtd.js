@@ -13,7 +13,10 @@ var dtd = EM.dtd = (function() {
         }
         return s;
     }
-    var X = utils.extend2;
+    var X = function(){
+        var args = utils.argsToArray(arguments);
+        return utils.extend.apply(utils,args.concat(false));
+    };
     var A = _({isindex:1,fieldset:1}),
         B = _({input:1,button:1,select:1,textarea:1,label:1}),
         C = X( _({a:1}), B ),

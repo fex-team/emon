@@ -9,8 +9,8 @@ Emon.extendClass( EmonEditor, {
             doc = me.document,
             win = me.window;
         me._proxyDomEvent = utils.bind(me._proxyDomEvent, me);
-        domUtils.on(doc, ['click', 'contextmenu', 'mousedown', 'keydown', 'keyup', 'keypress', 'mouseup', 'mouseover', 'mouseout', 'selectstart'],  this._firePharse.bind( this ));
-        domUtils.on(win, ['focus', 'blur'],  this._firePharse.bind( this ));
+        domUtils.on(doc, ['click', 'contextmenu', 'mousedown', 'keydown', 'keyup', 'keypress', 'mouseup', 'mouseover', 'mouseout', 'selectstart'],  utils.bind(this._firePharse, this ));
+        domUtils.on(win, ['focus', 'blur'],  utils.bind(this._firePharse, this ));
         domUtils.on(me.body,'drop',function(e){
             //阻止ff下默认的弹出新页面打开图片
             if(browser.gecko && e.stopPropagation) { e.stopPropagation(); }

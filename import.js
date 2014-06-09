@@ -5,6 +5,7 @@
     var paths = [
         'core/emon.js',
         'core/Class.js',
+        'core/browser.js',
         'core/utils.js',
         'core/editor.js',
         'core/command.js',
@@ -18,8 +19,7 @@
         'core/editor.selection.js',
         'core/keymap.js',
         'core/editor.lang.js',
-        'core/editor.defaultoptions.js',
-        'core/browser.js'
+        'core/editor.defaultoptions.js'
 
     ],
     baseURL = 'src/', doc = document;

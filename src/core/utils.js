@@ -1,5 +1,100 @@
-var utils = Utils = Emon.Utils = {
-    extend: function(t) {
+/**
+ * 工具函数包
+ * @file
+ * @module UE.utils
+ * @since 1.2.6.1
+ */
+
+/**
+ * UEditor封装使用的静态工具函数
+ * @module UE.utils
+ * @unfile
+ */
+
+var utils = EM.utils = {
+
+    /**
+     * 用给定的迭代器遍历对象
+     * @method each
+     * @param { Object } obj 需要遍历的对象
+     * @param { Function } iterator 迭代器， 该方法接受两个参数， 第一个参数是当前所处理的value， 第二个参数是当前遍历对象的key
+     * @example
+     * ```javascript
+     * var demoObj = {
+     *     key1: 1,
+     *     key2: 2
+     * };
+     *
+     * //output: key1: 1, key2: 2
+     * UE.utils.each( demoObj, funciton ( value, key ) {
+     *
+     *     console.log( key + ":" + value );
+     *
+     * } );
+     * ```
+     */
+
+    /**
+     * 用给定的迭代器遍历数组或类数组对象
+     * @method each
+     * @param { Array } array 需要遍历的数组或者类数组
+     * @param { Function } iterator 迭代器， 该方法接受两个参数， 第一个参数是当前所处理的value， 第二个参数是当前遍历对象的key
+     * @example
+     * ```javascript
+     * var divs = document.getElmentByTagNames( "div" );
+     *
+     * //output: 0: DIV, 1: DIV ...
+     * UE.utils.each( divs, funciton ( value, key ) {
+     *
+     *     console.log( key + ":" + value.tagName );
+     *
+     * } );
+     * ```
+     */
+    each : function(obj, iterator, context) {
+        if (obj == null) return;
+        if (obj.length === +obj.length) {
+            for (var i = 0, l = obj.length; i < l; i++) {
+                if(iterator.call(context, obj[i],i, obj) === false)
+                    return false;
+            }
+        } else {
+            for (var key in obj) {
+                if (obj.hasOwnProperty(key)) {
+                    if(iterator.call(context, obj[key], key, obj) === false)
+                        return false;
+                }
+            }
+        }
+    },
+
+    argsToArray: function ( args,index ) {
+        return Array.prototype.slice.call( args, index || 0 );
+    },
+
+
+    /**
+     * 将source对象中的属性扩展到target对象上， 根据指定的isKeepTarget值决定是否保留目标对象中与
+     * 源对象属性名相同的属性值。
+     * @method extend
+     * @param { Object } target 目标对象， 新的属性将附加到该对象上
+     * @param { Object } source 源对象， 该对象的属性会被附加到target对象上
+     * @param { Boolean } isKeepTarget 是否保留目标对象中与源对象中属性名相同的属性
+     * @return { Object } 返回target对象
+     * @example
+     * ```javascript
+     *
+     * var target = { name: 'target', sex: 1 },
+     *      source = { name: 'source', age: 17 };
+     *
+     * UE.utils.extend( target, source, true );
+     *
+     * //output: { name: 'target', sex: 1, age: 17 }
+     * console.log( target );
+     *
+     * ```
+     */
+    extend:function (t, s, b) {
         var a = arguments,
             notCover = this.isBoolean(a[a.length - 1]) ? a[a.length - 1] : false,
             len = this.isBoolean(a[a.length - 1]) ? a.length - 1 : a.length;
@@ -14,116 +109,362 @@ var utils = Utils = Emon.Utils = {
         return t;
     },
 
-    trim: function ( str ) {
-        return str.replace( /(^[ \t\n\r]+)|([ \t\n\r]+$)/g, '' );
-    },
-    each: function ( obj, iterator, context ) {
-        if ( obj == null ) return;
-        if ( obj.length === +obj.length ) {
-            for ( var i = 0, l = obj.length; i < l; i++ ) {
-                if ( iterator.call( context, i, obj[ i ], obj ) === false )
-                    return false;
-            }
-        } else {
-            for ( var key in obj ) {
-                if ( obj.hasOwnProperty( key ) ) {
-                    if ( iterator.call( context, key, obj[ key ], obj ) === false )
-                        return false;
-                }
-            }
-        }
-    },
 
-    keys: function ( plain ) {
-        var keys = [];
-        for ( var key in plain ) {
-            if ( plain.hasOwnProperty( key ) ) {
-                keys.push( key );
-            }
-        }
-        return keys;
-    },
-    proxy: function ( fn, context ) {
+
+
+    /**
+     * 用指定的context对象作为函数fn的上下文
+     * @method bind
+     * @param { Function } fn 需要绑定上下文的函数对象
+     * @param { Object } content 函数fn新的上下文对象
+     * @return { Function } 一个新的函数， 该函数作为原始函数fn的代理， 将完成fn的上下文调换工作。
+     * @example
+     * ```javascript
+     *
+     * var name = 'window',
+     *     newTest = null;
+     *
+     * function test () {
+     *     console.log( this.name );
+     * }
+     *
+     * newTest = UE.utils.bind( test, { name: 'object' } );
+     *
+     * //output: object
+     * newTest();
+     *
+     * //output: window
+     * test();
+     *
+     * ```
+     */
+    bind:function (fn, context) {
         return function () {
-            return fn.apply( context, arguments );
+            return fn.apply(context, arguments);
         };
     },
-    indexOf: function ( array, item, start ) {
+
+    /**
+     * 创建延迟指定时间后执行的函数fn
+     * @method defer
+     * @param { Function } fn 需要延迟执行的函数对象
+     * @param { int } delay 延迟的时间， 单位是毫秒
+     * @warning 该方法的时间控制是不精确的，仅仅只能保证函数的执行是在给定的时间之后，
+     *           而不能保证刚好到达延迟时间时执行。
+     * @return { Function } 目标函数fn的代理函数， 只有执行该函数才能起到延时效果
+     * @example
+     * ```javascript
+     * var start = 0;
+     *
+     * function test(){
+     *     console.log( new Date() - start );
+     * }
+     *
+     * var testDefer = UE.utils.defer( test, 1000 );
+     * //
+     * start = new Date();
+     * //output: (大约在1000毫秒之后输出) 1000
+     * testDefer();
+     * ```
+     */
+
+    /**
+     * 创建延迟指定时间后执行的函数fn, 如果在延迟时间内再次执行该方法， 将会根据指定的exclusion的值，
+     * 决定是否取消前一次函数的执行， 如果exclusion的值为true， 则取消执行，反之，将继续执行前一个方法。
+     * @method defer
+     * @param { Function } fn 需要延迟执行的函数对象
+     * @param { int } delay 延迟的时间， 单位是毫秒
+     * @param { Boolean } exclusion 如果在延迟时间内再次执行该函数，该值将决定是否取消执行前一次函数的执行，
+     *                     值为true表示取消执行， 反之则将在执行前一次函数之后才执行本次函数调用。
+     * @warning 该方法的时间控制是不精确的，仅仅只能保证函数的执行是在给定的时间之后，
+     *           而不能保证刚好到达延迟时间时执行。
+     * @return { Function } 目标函数fn的代理函数， 只有执行该函数才能起到延时效果
+     * @example
+     * ```javascript
+     *
+     * function test(){
+     *     console.log(1);
+     * }
+     *
+     * var testDefer = UE.utils.defer( test, 1000, true );
+     *
+     * //output: (两次调用仅有一次输出) 1
+     * testDefer();
+     * testDefer();
+     * ```
+     */
+    defer:function (fn, delay, exclusion) {
+        var timerID;
+        return function () {
+            if (exclusion) {
+                clearTimeout(timerID);
+            }
+            timerID = setTimeout(fn, delay);
+        };
+    },
+
+    /**
+     * 获取元素item在数组array中首次出现的位置, 如果未找到item， 则返回-1
+     * @method indexOf
+     * @remind 该方法的匹配过程使用的是恒等“===”
+     * @param { Array } array 需要查找的数组对象
+     * @param { * } item 需要在目标数组中查找的值
+     * @return { int } 返回item在目标数组array中首次出现的位置， 如果在数组中未找到item， 则返回-1
+     * @example
+     * ```javascript
+     * var item = 1,
+     *     arr = [ 3, 4, 6, 8, 1, 1, 2 ];
+     *
+     * //output: 4
+     * console.log( UE.utils.indexOf( arr, item ) );
+     * ```
+     */
+
+    /**
+     * 获取元素item数组array中首次出现的位置, 如果未找到item， 则返回-1。通过start的值可以指定搜索的起始位置。
+     * @method indexOf
+     * @remind 该方法的匹配过程使用的是恒等“===”
+     * @param { Array } array 需要查找的数组对象
+     * @param { * } item 需要在目标数组中查找的值
+     * @param { int } start 搜索的起始位置
+     * @return { int } 返回item在目标数组array中的start位置之后首次出现的位置， 如果在数组中未找到item， 则返回-1
+     * @example
+     * ```javascript
+     * var item = 1,
+     *     arr = [ 3, 4, 6, 8, 1, 2, 8, 3, 2, 1, 1, 4 ];
+     *
+     * //output: 9
+     * console.log( UE.utils.indexOf( arr, item, 5 ) );
+     * ```
+     */
+    indexOf:function (array, item, start) {
         var index = -1;
-        start = this.isNumber( start ) ? start : 0;
-        this.each( array, function ( v, i ) {
-            if ( i >= start && v === item ) {
+        start = this.isNumber(start) ? start : 0;
+        this.each(array, function (v, i) {
+            if (i >= start && v === item) {
                 index = i;
                 return false;
             }
-        } );
+        });
         return index;
     },
-    argsToArray: function ( args,index ) {
-        return Array.prototype.slice.call( args, index || 0 );
-    },
-    clonePlainObject:function (source, target) {
-        var tmp;
-        target = target || {};
-        for (var i in source) {
-            if (source.hasOwnProperty(i)) {
-                tmp = source[i];
-                if (utils.isObject(tmp) || utils.isArray(tmp)) {
-                    target[i] = utils.isArray(tmp) ? [] : {};
-                    utils.clonePlainObject(source[i], target[i])
-                } else {
-                    target[i] = tmp;
-                }
+
+    /**
+     * 移除数组array中所有的元素item
+     * @method removeItem
+     * @param { Array } array 要移除元素的目标数组
+     * @param { * } item 将要被移除的元素
+     * @remind 该方法的匹配过程使用的是恒等“===”
+     * @example
+     * ```javascript
+     * var arr = [ 4, 5, 7, 1, 3, 4, 6 ];
+     *
+     * UE.utils.removeItem( arr, 4 );
+     * //output: [ 5, 7, 1, 3, 6 ]
+     * console.log( arr );
+     *
+     * ```
+     */
+    removeItem:function (array, item) {
+        for (var i = 0, l = array.length; i < l; i++) {
+            if (array[i] === item) {
+                array.splice(i, 1);
+                i--;
             }
         }
-        return target;
-    },
-    compareObject:function(source,target){
-        var tmp;
-        if(this.isEmptyObject(source) !== this.isEmptyObject(target)){
-            return false
-        }
-        if(this.getObjectLength(source) != this.getObjectLength(target)){
-            return false;
-        }
-        for(var p in source){
-            if(source.hasOwnProperty(p)){
-                tmp = source[p];
-                if(target[p] === undefined){
-                    return false;
-                }
-                if (this.isObject(tmp) || this.isArray(tmp)) {
-                    if(this.isObject(target[p]) !== this.isObject(tmp)){
-                        return false;
-                    }
-                    if(this.isArray(tmp) !== this.isArray(target[p])){
-                        return false;
-                    }
-                    if(this.compareObject(tmp, target[p]) === false){
-                        return false
-                    }
-                } else {
-                    if(tmp != target[p]){
-                        return false
-                    }
-                }
-            }
-        }
-        return true;
-    },
-    getObjectLength:function(obj){
-        if (this.isArray(obj) || this.isString(obj)) return obj.length;
-        var count = 0;
-        for (var key in obj) if (obj.hasOwnProperty(key)) count++;
-        return count;
-    },
-    isEmptyObject:function (obj) {
-        if (obj == null) return true;
-        if (this.isArray(obj) || this.isString(obj)) return obj.length === 0;
-        for (var key in obj) if (obj.hasOwnProperty(key)) return false;
-        return true;
     },
 
+    /**
+     * 删除字符串str的首尾空格
+     * @method trim
+     * @param { String } str 需要删除首尾空格的字符串
+     * @return { String } 删除了首尾的空格后的字符串
+     * @example
+     * ```javascript
+     *
+     * var str = " UEdtior ";
+     *
+     * //output: 9
+     * console.log( str.length );
+     *
+     * //output: 7
+     * console.log( UE.utils.trim( " UEdtior " ).length );
+     *
+     * //output: 9
+     * console.log( str.length );
+     *
+     *  ```
+     */
+    trim:function (str) {
+        return str.replace(/(^[ \t\n\r]+)|([ \t\n\r]+$)/g, '');
+    },
+
+    /**
+     * 将字符串str以','分隔成数组后，将该数组转换成哈希对象， 其生成的hash对象的key为数组中的元素， value为1
+     * @method listToMap
+     * @warning 该方法在生成的hash对象中，会为每一个key同时生成一个另一个全大写的key。
+     * @param { String } str 该字符串将被以','分割为数组， 然后进行转化
+     * @return { Object } 转化之后的hash对象
+     * @example
+     * ```javascript
+     *
+     * //output: Object {UEdtior: 1, UEDTIOR: 1, Hello: 1, HELLO: 1}
+     * console.log( UE.utils.listToMap( 'UEdtior,Hello' ) );
+     *
+     * ```
+     */
+
+    /**
+     * 将字符串数组转换成哈希对象， 其生成的hash对象的key为数组中的元素， value为1
+     * @method listToMap
+     * @warning 该方法在生成的hash对象中，会为每一个key同时生成一个另一个全大写的key。
+     * @param { Array } arr 字符串数组
+     * @return { Object } 转化之后的hash对象
+     * @example
+     * ```javascript
+     *
+     * //output: Object {UEdtior: 1, UEDTIOR: 1, Hello: 1, HELLO: 1}
+     * console.log( UE.utils.listToMap( [ 'UEdtior', 'Hello' ] ) );
+     *
+     * ```
+     */
+    listToMap:function (list) {
+        if (!list)return {};
+        list = utils.isArray(list) ? list : list.split(',');
+        for (var i = 0, ci, obj = {}; ci = list[i++];) {
+            obj[ci.toUpperCase()] = obj[ci] = 1;
+        }
+        return obj;
+    },
+
+    /**
+     * 将str中的html符号转义,将转义“'，&，<，"，>”五个字符
+     * @method unhtml
+     * @param { String } str 需要转义的字符串
+     * @return { String } 转义后的字符串
+     * @example
+     * ```javascript
+     * var html = '<body>&</body>';
+     *
+     * //output: &lt;body&gt;&amp;&lt;/body&gt;
+     * console.log( UE.utils.unhtml( html ) );
+     *
+     * ```
+     */
+    unhtml:function (str, reg) {
+        return str ? str.replace(reg || /[&<">'](?:(amp|lt|quot|gt|#39|nbsp|#\d+);)?/g, function (a, b) {
+            if (b) {
+                return a;
+            } else {
+                return {
+                    '<':'&lt;',
+                    '&':'&amp;',
+                    '"':'&quot;',
+                    '>':'&gt;',
+                    "'":'&#39;'
+                }[a]
+            }
+
+        }) : '';
+    },
+
+    /**
+     * 将str中的转义字符还原成html字符
+     * @see UE.utils.unhtml(String);
+     * @method html
+     * @param { String } str 需要逆转义的字符串
+     * @return { String } 逆转义后的字符串
+     * @example
+     * ```javascript
+     *
+     * var str = '&lt;body&gt;&amp;&lt;/body&gt;';
+     *
+     * //output: <body>&</body>
+     * console.log( UE.utils.html( str ) );
+     *
+     * ```
+     */
+    html:function (str) {
+        return str ? str.replace(/&((g|l|quo)t|amp|#39|nbsp);/g, function (m) {
+            return {
+                '&lt;':'<',
+                '&amp;':'&',
+                '&quot;':'"',
+                '&gt;':'>',
+                '&#39;':"'",
+                '&nbsp;':' '
+            }[m]
+        }) : '';
+    },
+
+    /**
+     * 将css样式转换为驼峰的形式
+     * @method cssStyleToDomStyle
+     * @param { String } cssName 需要转换的css样式名
+     * @return { String } 转换成驼峰形式后的css样式名
+     * @example
+     * ```javascript
+     *
+     * var str = 'border-top';
+     *
+     * //output: borderTop
+     * console.log( UE.utils.cssStyleToDomStyle( str ) );
+     *
+     * ```
+     */
+    cssStyleToDomStyle:function () {
+        var test = document.createElement('div').style,
+            cache = {
+                'float':test.cssFloat != undefined ? 'cssFloat' : test.styleFloat != undefined ? 'styleFloat' : 'float'
+            };
+
+        return function (cssName) {
+            return cache[cssName] || (cache[cssName] = cssName.toLowerCase().replace(/-./g, function (match) {
+                return match.charAt(1).toUpperCase();
+            }));
+        };
+    }(),
+
+    /**
+     * 动态加载文件到doc中
+     * @method loadFile
+     * @param { DomDocument } document 需要加载资源文件的文档对象
+     * @param { Object } options 加载资源文件的属性集合， 取值请参考代码示例
+     * @example
+     * ```javascript
+     *
+     * UE.utils.loadFile( document, {
+     *     src:"test.js",
+     *     tag:"script",
+     *     type:"text/javascript",
+     *     defer:"defer"
+     * } );
+     *
+     * ```
+     */
+
+    /**
+     * 动态加载文件到doc中，加载成功后执行的回调函数fn
+     * @method loadFile
+     * @param { DomDocument } document 需要加载资源文件的文档对象
+     * @param { Object } options 加载资源文件的属性集合， 该集合支持的值是script标签和style标签支持的所有属性。
+     * @param { Function } fn 资源文件加载成功之后执行的回调
+     * @warning 对于在同一个文档中多次加载同一URL的文件， 该方法会在第一次加载之后缓存该请求，
+     *           在此之后的所有同一URL的请求， 将会直接触发回调。
+     * @example
+     * ```javascript
+     *
+     * UE.utils.loadFile( document, {
+     *     src:"test.js",
+     *     tag:"script",
+     *     type:"text/javascript",
+     *     defer:"defer"
+     * }, function () {
+     *     console.log('加载成功');
+     * } );
+     *
+     * ```
+     */
     loadFile:function () {
         var tmpList = [];
 
@@ -184,12 +525,137 @@ var utils = Utils = Emon.Utils = {
                     element.onload = element.onreadystatechange = null;
                 }
             };
-//            element.onerror = function () {
-//                throw Error('The load ' + (obj.href || obj.src) + ' fails,check the url settings of file ')
-//            };
+            element.onerror = function () {
+                throw Error('The load ' + (obj.href || obj.src) + ' fails,check the url settings of file ueditor.config.js ')
+            };
             doc.getElementsByTagName("head")[0].appendChild(element);
         }
     }(),
+
+    /**
+     * 判断obj对象是否为空
+     * @method isEmptyObject
+     * @param { * } obj 需要判断的对象
+     * @remind 如果判断的对象是NULL， 将直接返回true， 如果是数组且为空， 返回true， 如果是字符串， 且字符串为空，
+     *          返回true， 如果是普通对象， 且该对象没有任何实例属性， 返回true
+     * @return { Boolean } 对象是否为空
+     * @example
+     * ```javascript
+     *
+     * //output: true
+     * console.log( UE.utils.isEmptyObject( {} ) );
+     *
+     * //output: true
+     * console.log( UE.utils.isEmptyObject( [] ) );
+     *
+     * //output: true
+     * console.log( UE.utils.isEmptyObject( "" ) );
+     *
+     * //output: false
+     * console.log( UE.utils.isEmptyObject( { key: 1 } ) );
+     *
+     * //output: false
+     * console.log( UE.utils.isEmptyObject( [1] ) );
+     *
+     * //output: false
+     * console.log( UE.utils.isEmptyObject( "1" ) );
+     *
+     * ```
+     */
+    isEmptyObject:function (obj) {
+        if (obj == null) return true;
+        if (this.isArray(obj) || this.isString(obj)) return obj.length === 0;
+        for (var key in obj) if (obj.hasOwnProperty(key)) return false;
+        return true;
+    },
+
+    /**
+     * 把rgb格式的颜色值转换成16进制格式
+     * @method fixColor
+     * @param { String } rgb格式的颜色值
+     * @param { String }
+     * @example
+     * rgb(255,255,255)  => "#ffffff"
+     */
+    fixColor:function (name, value) {
+        if (/color/i.test(name) && /rgba?/.test(value)) {
+            var array = value.split(",");
+            if (array.length > 3)
+                return "";
+            value = "#";
+            for (var i = 0, color; color = array[i++];) {
+                color = parseInt(color.replace(/[^\d]/gi, ''), 10).toString(16);
+                value += color.length == 1 ? "0" + color : color;
+            }
+            value = value.toUpperCase();
+        }
+        return  value;
+    },
+    /**
+     * 只针对border,padding,margin做了处理，因为性能问题
+     * @public
+     * @function
+     * @param {String}    val style字符串
+     */
+    optCss:function (val) {
+        var padding, margin, border;
+        val = val.replace(/(padding|margin|border)\-([^:]+):([^;]+);?/gi, function (str, key, name, val) {
+            if (val.split(' ').length == 1) {
+                switch (key) {
+                    case 'padding':
+                        !padding && (padding = {});
+                        padding[name] = val;
+                        return '';
+                    case 'margin':
+                        !margin && (margin = {});
+                        margin[name] = val;
+                        return '';
+                    case 'border':
+                        return val == 'initial' ? '' : str;
+                }
+            }
+            return str;
+        });
+
+        function opt(obj, name) {
+            if (!obj) {
+                return '';
+            }
+            var t = obj.top , b = obj.bottom, l = obj.left, r = obj.right, val = '';
+            if (!t || !l || !b || !r) {
+                for (var p in obj) {
+                    val += ';' + name + '-' + p + ':' + obj[p] + ';';
+                }
+            } else {
+                val += ';' + name + ':' +
+                    (t == b && b == l && l == r ? t :
+                            t == b && l == r ? (t + ' ' + l) :
+                            l == r ? (t + ' ' + l + ' ' + b) : (t + ' ' + r + ' ' + b + ' ' + l)) + ';'
+            }
+            return val;
+        }
+
+        val += opt(padding, 'padding') + opt(margin, 'margin');
+        return val.replace(/^[ \n\r\t;]*|[ \n\r\t]*$/, '').replace(/;([ \n\r\t]+)|\1;/g, ';')
+            .replace(/(&((l|g)t|quot|#39))?;{2,}/g, function (a, b) {
+                return b ? b + ";;" : ';'
+            });
+    },
+
+    /**
+     * 克隆对象
+     * @method clone
+     * @param { Object } source 源对象
+     * @return { Object } source的一个副本
+     */
+
+    /**
+     * 深度克隆对象，将source的属性克隆到target对象， 会覆盖target重名的属性。
+     * @method clone
+     * @param { Object } source 源对象
+     * @param { Object } target 目标对象
+     * @return { Object } 附加了source对象所有属性的target对象
+     */
     clone:function (source, target) {
         var tmp;
         target = target || {};
@@ -206,26 +672,224 @@ var utils = Utils = Emon.Utils = {
         }
         return target;
     },
-    unhtml:function (str, reg) {
-        return str ? str.replace(reg || /[&<">'](?:(amp|lt|quot|gt|#39|nbsp);)?/g, function (a, b) {
-            if (b) {
-                return a;
-            } else {
-                return {
-                    '<':'&lt;',
-                    '&':'&amp;',
-                    '"':'&quot;',
-                    '>':'&gt;',
-                    "'":'&#39;'
-                }[a]
+
+    /**
+     * 把cm／pt为单位的值转换为px为单位的值
+     * @method transUnitToPx
+     * @param { String } 待转换的带单位的字符串
+     * @return { String } 转换为px为计量单位的值的字符串
+     * @example
+     * ```javascript
+     *
+     * //output: 500px
+     * console.log( UE.utils.transUnitToPx( '20cm' ) );
+     *
+     * //output: 27px
+     * console.log( UE.utils.transUnitToPx( '20pt' ) );
+     *
+     * ```
+     */
+    transUnitToPx:function (val) {
+        if (!/(pt|cm)/.test(val)) {
+            return val
+        }
+        var unit;
+        val.replace(/([\d.]+)(\w+)/, function (str, v, u) {
+            val = v;
+            unit = u;
+        });
+        switch (unit) {
+            case 'cm':
+                val = parseFloat(val) * 25;
+                break;
+            case 'pt':
+                val = Math.round(parseFloat(val) * 96 / 72);
+        }
+        return val + (val ? 'px' : '');
+    },
+
+    /**
+     * 在dom树ready之后执行给定的回调函数
+     * @method domReady
+     * @remind 如果在执行该方法的时候， dom树已经ready， 那么回调函数将立刻执行
+     * @param { Function } fn dom树ready之后的回调函数
+     * @example
+     * ```javascript
+     *
+     * UE.utils.domReady( function () {
+     *
+     *     console.log('123');
+     *
+     * } );
+     *
+     * ```
+     */
+    domReady:function () {
+
+        var fnArr = [];
+
+        function doReady(doc) {
+            //确保onready只执行一次
+            doc.isReady = true;
+            for (var ci; ci = fnArr.pop(); ci()) {
             }
-        }) : '';
+        }
+
+        return function (onready, win) {
+            win = win || window;
+            var doc = win.document;
+            onready && fnArr.push(onready);
+            if (doc.readyState === "complete") {
+                doReady(doc);
+            } else {
+                doc.isReady && doReady(doc);
+                if (browser.ie && browser.version != 11) {
+                    (function () {
+                        if (doc.isReady) return;
+                        try {
+                            doc.documentElement.doScroll("left");
+                        } catch (error) {
+                            setTimeout(arguments.callee, 0);
+                            return;
+                        }
+                        doReady(doc);
+                    })();
+                    win.attachEvent('onload', function () {
+                        doReady(doc)
+                    });
+                } else {
+                    doc.addEventListener("DOMContentLoaded", function () {
+                        doc.removeEventListener("DOMContentLoaded", arguments.callee, false);
+                        doReady(doc);
+                    }, false);
+                    win.addEventListener('load', function () {
+                        doReady(doc)
+                    }, false);
+                }
+            }
+
+        }
+    }(),
+
+    /**
+     * 动态添加css样式
+     * @method cssRule
+     * @param { String } 节点名称
+     * @grammar UE.utils.cssRule('添加的样式的节点名称',['样式'，'放到哪个document上'])
+     * @grammar UE.utils.cssRule('body','body{background:#ccc}') => null  //给body添加背景颜色
+     * @grammar UE.utils.cssRule('body') =>样式的字符串  //取得key值为body的样式的内容,如果没有找到key值先关的样式将返回空，例如刚才那个背景颜色，将返回 body{background:#ccc}
+     * @grammar UE.utils.cssRule('body',document) => 返回指定key的样式，并且指定是哪个document
+     * @grammar UE.utils.cssRule('body','') =>null //清空给定的key值的背景颜色
+     */
+    cssRule:browser.ie && browser.version != 11 ? function (key, style, doc) {
+        var indexList, index;
+        if(style === undefined || style && style.nodeType && style.nodeType == 9){
+            //获取样式
+            doc = style && style.nodeType && style.nodeType == 9 ? style : (doc || document);
+            indexList = doc.indexList || (doc.indexList = {});
+            index = indexList[key];
+            if(index !==  undefined){
+                return doc.styleSheets[index].cssText
+            }
+            return undefined;
+        }
+        doc = doc || document;
+        indexList = doc.indexList || (doc.indexList = {});
+        index = indexList[key];
+        //清除样式
+        if(style === ''){
+            if(index!== undefined){
+                doc.styleSheets[index].cssText = '';
+                delete indexList[key];
+                return true
+            }
+            return false;
+        }
+
+        //添加样式
+        if(index!== undefined){
+            sheetStyle =  doc.styleSheets[index];
+        }else{
+            sheetStyle = doc.createStyleSheet('', index = doc.styleSheets.length);
+            indexList[key] = index;
+        }
+        sheetStyle.cssText = style;
+    }: function (key, style, doc) {
+        var head, node;
+        if(style === undefined || style && style.nodeType && style.nodeType == 9){
+            //获取样式
+            doc = style && style.nodeType && style.nodeType == 9 ? style : (doc || document);
+            node = doc.getElementById(key);
+            return node ? node.innerHTML : undefined;
+        }
+        doc = doc || document;
+        node = doc.getElementById(key);
+
+        //清除样式
+        if(style === ''){
+            if(node){
+                node.parentNode.removeChild(node);
+                return true
+            }
+            return false;
+        }
+
+        //添加样式
+        if(node){
+            node.innerHTML = style;
+        }else{
+            node = doc.createElement('style');
+            node.id = key;
+            node.innerHTML = style;
+            doc.getElementsByTagName('head')[0].appendChild(node);
+        }
     }
+
 
 };
+/**
+ * 判断给定的对象是否是字符串
+ * @method isString
+ * @param { * } object 需要判断的对象
+ * @return { Boolean } 给定的对象是否是字符串
+ */
 
-Utils.each( [ 'String', 'Function', 'Array', 'Number', 'RegExp', 'Object' ], function ( i, v ) {
-    Emon.Utils[ 'is' + v ] = function ( obj ) {
-        return Object.prototype.toString.apply( obj ) == '[object ' + v + ']';
+/**
+ * 判断给定的对象是否是数组
+ * @method isArray
+ * @param { * } object 需要判断的对象
+ * @return { Boolean } 给定的对象是否是数组
+ */
+
+/**
+ * 判断给定的对象是否是一个Function
+ * @method isFunction
+ * @param { * } object 需要判断的对象
+ * @return { Boolean } 给定的对象是否是Function
+ */
+
+/**
+ * 判断给定的对象是否是Number
+ * @method isNumber
+ * @param { * } object 需要判断的对象
+ * @return { Boolean } 给定的对象是否是Number
+ */
+
+/**
+ * 判断给定的对象是否是一个正则表达式
+ * @method isRegExp
+ * @param { * } object 需要判断的对象
+ * @return { Boolean } 给定的对象是否是正则表达式
+ */
+
+/**
+ * 判断给定的对象是否是一个普通对象
+ * @method isObject
+ * @param { * } object 需要判断的对象
+ * @return { Boolean } 给定的对象是否是普通对象
+ */
+utils.each(['String', 'Function','Boolean', 'Array', 'Number', 'RegExp', 'Object', 'Date'], function (v) {
+    EM.utils['is' + v] = function (obj) {
+        return Object.prototype.toString.apply(obj) == '[object ' + v + ']';
     }
-} );
+});
