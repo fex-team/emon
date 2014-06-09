@@ -1,11 +1,11 @@
-var Emon = window.Emon = (function(){
+var Emon = window.EM = window.Emon = function(){
 
     return {
+        version: '1.0.0',
 
-        getEditor: function(){
-
-        }
+        //挂接多语言
+        LANG: {}
 
     };
 
-})();
+}();
