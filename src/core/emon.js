@@ -4,8 +4,10 @@ var Emon = window.EM = window.Emon = function(){
         version: '1.0.0',
 
         //挂接多语言
-        LANG: {}
+        LANG: {},
 
+        //instants
+        instants:{}
     };
 
 }();

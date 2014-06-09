@@ -2,29 +2,36 @@
 Emon.extendClass( EmonEditor, {
     _initEvents: function () {
         this._eventCallbacks = {};
+        this._bindEvents();
     },
     _bindEvents: function () {
-        this._bindPaperEvents();
-        this._bindKeyboardEvents();
+        var me = this,
+            doc = me.document,
+            win = me.window;
+        me._proxyDomEvent = utils.bind(me._proxyDomEvent, me);
+        domUtils.on(doc, ['click', 'contextmenu', 'mousedown', 'keydown', 'keyup', 'keypress', 'mouseup', 'mouseover', 'mouseout', 'selectstart'],  this._firePharse.bind( this ));
+        domUtils.on(win, ['focus', 'blur'],  this._firePharse.bind( this ));
+        domUtils.on(me.body,'drop',function(e){
+            //阻止ff下默认的弹出新页面打开图片
+            if(browser.gecko && e.stopPropagation) { e.stopPropagation(); }
+            me._interactChange(e)
+        });
+        domUtils.on(doc, ['mouseup', 'keydown'], function (evt) {
+            //特殊键不触发selectionchange
+            if (evt.type == 'keydown' && (evt.ctrlKey || evt.metaKey || evt.shiftKey || evt.altKey)) {
+                return;
+            }
+            if (evt.button == 2)return;
+            me._interactChange(evt)
+        });
+
     },
     _resetEvents: function () {
         this._initEvents();
         this._bindEvents();
     },
-    // TODO: mousemove lazy bind
-    _bindPaperEvents: function () {
-        this._paper.on( 'click dblclick mousedown contextmenu mouseup mousemove mousewheel DOMMouseScroll touchstart touchmove touchend', this._firePharse.bind( this ) );
-        if ( window ) {
-            window.addEventListener( 'resize', this._firePharse.bind( this ) );
-            window.addEventListener( 'blur', this._firePharse.bind( this ) );
-        }
-    },
-    _bindKeyboardEvents: function () {
-        if ( ( navigator.userAgent.indexOf( 'iPhone' ) == -1 ) && ( navigator.userAgent.indexOf( 'iPod' ) == -1 ) && ( navigator.userAgent.indexOf( 'iPad' ) == -1 ) ) {
-            //只能在这里做，要不无法触发
-            Utils.listen( document.body, 'keydown keyup keypress paste', this._firePharse.bind( this ) );
-        }
-    },
+
+
     _firePharse: function ( e ) {
 //        //只读模式下强了所有的事件操作
 //        if(this.readOnly === true){
@@ -53,16 +60,16 @@ Emon.extendClass( EmonEditor, {
         }
     },
     _interactChange: function ( e ) {
-        var minder = this;
+        var me = this;
 
         clearTimeout( this._interactTimeout );
         this._interactTimeout = setTimeout( function () {
-            var stoped = minder._fire( new EmonEvent( 'beforeinteractchange' ) );
+            var stoped = me._fire( new EmonEvent( 'beforeinteractchange' ) );
             if ( stoped ) {
                 return;
             }
-            minder._fire( new EmonEvent( 'preinteractchange' ) );
-            minder._fire( new EmonEvent( 'interactchange' ) );
+            me._fire( new EmonEvent( 'preinteractchange' ) );
+            me._fire( new EmonEvent( 'interactchange' ) );
         }, 20 );
     },
     _listen: function ( type, callback ) {
@@ -130,5 +137,8 @@ Emon.extendClass( EmonEditor, {
         var e = new EmonEvent( type, params );
         this._fire( e );
         return this;
+    },
+    trigger : function(type,params){
+        return this.fire(type,params)
     }
 } );

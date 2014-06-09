@@ -1,91 +1,115 @@
 var EmonEditor = Emon.EmonEditor = Emon.createClass( "EmonEditor", {
-    constructor: function ( options ) {
-        this._options = Utils.extend( window.KITYMINDER_CONFIG || {}, options );
-        this.setDefaultOptions( KM.defaultOptions );
+    constructor: function () {
+        var _guid = 0;
+        return  function(id,options){
+            this.guid = 'EmonEditor' + _guid++;
+
+            this._options = Utils.extend( window.EMON_CONFIG || {}, options );
+
+            this.setOption( EM.defaultOptions,true );
+
+            this._rootContainer = utils.isString(id) ? document.getElementById(id) : id;
+
+            this._initContainer();
+
+            Emon.instants[this.guid] = this;
+        }
+
+    }(),
+
+    _initContainer:function(){
+        var me = this;
+
+
+        me._rootContainer.style.zIndex = me.getOption('zIndex');
+
+        var _html = ( ie && browser.version < 9  ? '' : '<!DOCTYPE html>') +
+            '<html xmlns=\'http://www.w3.org/1999/xhtml\' class=\'view\' ><head>' +
+            '<style type=\'text/css\'>' +
+            //设置四周的留边
+            '.view{padding:0;word-wrap:break-word;cursor:text;height:90%;}\n' +
+            //设置默认字体和字号
+            //font-family不能呢随便改，在safari下fillchar会有解析问题
+            'body{margin:8px;font-family:sans-serif;font-size:16px;}' +
+            //设置段落间距
+            'p{margin:5px 0;}</style>' +
+            (me.getOption('initialStyle') ? '<style>' + me.getOption('initialStyle') + '</style>' : '') +
+            '</head><body class=\'view\' ></body>' +
+            '<script type=\'text/javascript\' ' + (ie ? 'defer=\'defer\'' : '' ) +' id=\'_initialScript\'>' +
+            'setTimeout(function(){editor = window.parent.EM.instants[\'' + me._guid + '\'];editor._initSetup(document);},0);' +
+            'var _tmpScript = document.getElementById(\'_initialScript\');_tmpScript.parentNode.removeChild(_tmpScript);</script></html>';
+        me._rootContainer.appendChild(domUtils.createElement(document, 'iframe', {
+                id: 'ueditor_' + me._guid,
+                width: "100%",
+                height: "100%",
+                frameborder: "0",
+                src: 'javascript:void(function(){document.open();' +
+                    'document.write("' + _html + '");document.close();}())'
+            }));
+        me._rootContainer.style.overflow = 'hidden';
+
+
+    },
+    _initQuote : function(doc){
+        var me = this;
+        if (ie) {
+            doc.body.disabled = true;
+            doc.body.contentEditable = true;
+            doc.body.disabled = false;
+        } else {
+            doc.body.contentEditable = true;
+        }
+        doc.body.spellcheck = false;
+        me.document = doc;
+        me.window = doc.defaultView || doc.parentWindow;
+        me.iframe = me.window.frameElement;
+        me.body = doc.body;
+    },
+    _initSetup : function(doc){
+
+        this._initQuote(doc);
+
         this._initEvents();
-        this._initMinder();
+
         this._initSelection();
+
         this._initStatus();
+
         this._initShortcutKey();
+
         this._initContextmenu();
+
         this._initModules();
 
-        if ( this.getOptions( 'readOnly' ) === true ) {
+        if ( this.getOption( 'readOnly' ) === true ) {
             this.setDisabled();
         }
         this.fire( 'ready' );
     },
-    getOptions: function ( key ) {
-        var val;
-        if(key){
-            val = this.getPreferences(key);
-            return  val === null || val === undefined ? this._options[ key ] : val;
-        }else{
-            val = this.getPreferences();
-            if(val){
-                return utils.extend(val,this._options,true)
-            }else{
-                return this._options;
-            }
-        }
+    _initSelection : function(){
+        this.selection = new Emon.Selection(this.document);
     },
-    setDefaultOptions: function ( key, val,cover) {
+    getOption: function ( key ) {
+        return key ? this._options[key] : this._options;
+    },
+
+    setOption: function ( key, val,notCover ) {
         var obj = {};
-        if ( Utils.isString( key ) ) {
-            obj[ key ] = val;
+        if (utils.isString(key)) {
+            obj[key] = val
         } else {
             obj = key;
+            notCover = val;
         }
-        utils.extend( this._options, obj, !cover );
-
-    },
-    setOptions: function ( key, val ) {
-        this.setPreferences(key,val)
-    },
-    _initMinder: function () {
-
-        this._paper = new kity.Paper();
-        this._paper.getNode().setAttribute( 'contenteditable', true );
-        this._paper.getNode().ondragstart = function ( e ) {
-            e.preventDefault();
-        };
-
-        this._addRenderContainer();
-
-        this._root = new MinderNode( this.getLang().maintopic );
-        this._root.setType( "root" );
-        if ( this._options.renderTo ) {
-            this.renderTo( this._options.renderTo );
-            //this._paper.setStyle( 'font-family', 'Arial,"Microsoft YaHei",sans-serif' );
-        }
-    },
-    _addRenderContainer: function () {
-        this._rc = new kity.Group();
-        this._paper.addShape( this._rc );
+        utils.extend(this._options, obj, !notCover);
     },
 
-    renderTo: function ( target ) {
-        this._paper.renderTo( this._renderTarget = target );
-        this._bindEvents();
-    },
 
-    getRenderContainer: function () {
-        return this._rc;
-    },
-
-    getPaper: function () {
-        return this._paper;
-    },
-    getRenderTarget: function () {
-        return this._renderTarget;
-    },
     _initShortcutKey: function () {
         this._shortcutkeys = {};
         this._bindshortcutKeys();
     },
-    isTextEditStatus: function () {
-        return false;
-    },
+
     addShortcutKeys: function ( cmd, keys ) {
         var obj = {}, km = this;
         if ( keys ) {

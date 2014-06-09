@@ -2,5 +2,6 @@
 EM.defaultOptions = {
     zIndex : 1000,
     lang:'zh-cn',
-    readyOnly:false
+    readyOnly:false,
+    initialStyle : ''
 };
