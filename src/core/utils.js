@@ -843,6 +843,15 @@ var utils = EM.utils = {
             node.innerHTML = style;
             doc.getElementsByTagName('head')[0].appendChild(node);
         }
+    },
+    keys: function ( plain ) {
+        var keys = [];
+        for ( var key in plain ) {
+            if ( plain.hasOwnProperty( key ) ) {
+                keys.push( key );
+            }
+        }
+        return keys;
     }
 
 

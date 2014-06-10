@@ -4,7 +4,7 @@ var EmonEditor = Emon.EmonEditor = Emon.createClass( "EmonEditor", {
         return  function(id,options){
             this.guid = 'EmonEditor' + _guid++;
 
-            this._options = Utils.extend( window.EMON_CONFIG || {}, options );
+            this._options = utils.extend( window.EMON_CONFIG || {}, options );
 
             this.setOption( EM.defaultOptions,true );
 
@@ -36,7 +36,7 @@ var EmonEditor = Emon.EmonEditor = Emon.createClass( "EmonEditor", {
             (me.getOption('initialStyle') ? '<style>' + me.getOption('initialStyle') + '</style>' : '') +
             '</head><body class=\'view\' ></body>' +
             '<script type=\'text/javascript\' ' + (ie ? 'defer=\'defer\'' : '' ) +' id=\'_initialScript\'>' +
-            'setTimeout(function(){editor = window.parent.EM.instants[\'' + me._guid + '\'];editor._initSetup(document);},0);' +
+            'setTimeout(function(){editor = window.parent.EM.instants[\'' + me.guid + '\'];editor._initSetup(document);},0);' +
             'var _tmpScript = document.getElementById(\'_initialScript\');_tmpScript.parentNode.removeChild(_tmpScript);</script></html>';
         me._rootContainer.appendChild(domUtils.createElement(document, 'iframe', {
                 id: 'ueditor_' + me._guid,
@@ -81,6 +81,8 @@ var EmonEditor = Emon.EmonEditor = Emon.createClass( "EmonEditor", {
 
         this._initModules();
 
+        this._initContent();
+
         if ( this.getOption( 'readOnly' ) === true ) {
             this.setDisabled();
         }
@@ -88,6 +90,10 @@ var EmonEditor = Emon.EmonEditor = Emon.createClass( "EmonEditor", {
     },
     _initSelection : function(){
         this.selection = new Emon.Selection(this.document);
+    },
+
+    _initContent:function(){
+
     },
     getOption: function ( key ) {
         return key ? this._options[key] : this._options;

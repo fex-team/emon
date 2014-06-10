@@ -2,7 +2,7 @@
 Emon.extendClass( EmonEditor, {
     _initModules: function () {
         var modulesPool = Emon.getModules();
-        var modulesToLoad = this._options.modules || Utils.keys( modulesPool );
+        var modulesToLoad = this._options.modules || utils.keys( modulesPool );
 
         this._commands = {};
         this._query = {};

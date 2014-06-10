@@ -107,9 +107,9 @@ Emon.extendClass( EmonEditor, {
         return e.shouldStopPropagation();
     },
     on: function ( name, callback ) {
-        var km = this;
-        utils.each( name.split( /\s+/ ), function ( i, n ) {
-            km._listen( n.toLowerCase(), callback );
+        var me = this;
+        utils.each( name.split( /\s+/ ), function ( n ) {
+            me._listen( n.toLowerCase(), callback );
         } );
         return this;
     },

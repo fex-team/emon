@@ -1,10 +1,10 @@
-var MinderEvent = Emon.createClass( 'EmonEvent', {
+var EmonEvent = Emon.createClass( 'EmonEvent', {
     constructor: function ( type, params, canstop ) {
         params = params || {};
         if( params.target && params.preventDefault ) {
             this.originEvent = params;
         } else {
-            Emon.Utils.extend( this, params );
+            Emon.utils.extend( this, params );
         }
         this.type = type;
         this._canstop = canstop || false;

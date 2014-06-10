@@ -14,17 +14,17 @@ Emon.extendClass(EmonEditor, {
     },
 
     queryCommandState: function (name) {
-        return this._queryCommand(name, "State", Utils.argsToArray(1));
+        return this._queryCommand(name, "State", utils.argsToArray(1));
     },
 
     queryCommandValue: function (name) {
-        return this._queryCommand(name, "Value", Utils.argsToArray(1));
+        return this._queryCommand(name, "Value", utils.argsToArray(1));
     },
 
     execCommand: function (name) {
         name = name.toLowerCase();
 
-        var cmdArgs = Utils.argsToArray(arguments, 1),
+        var cmdArgs = utils.argsToArray(arguments, 1),
             cmd, stoped, result, eventParams;
         var me = this;
         cmd = this._getCommand(name);
