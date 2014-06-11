@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<testsuites>
+  <testsuite name="Chrome 33.0.1750 (Windows 7)" package="" timestamp="2014-04-10T08:43:51" id="0" hostname="C31C05B08799601" tests="2" errors="0" failures="0" time="0.016">
+    <properties>
+      <property name="browser.fullName" value="Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.154 Safari/537.36"/>
+    </properties>
+    <testcase name="toBe相当于===" time="0.014" classname="Chrome 33.0.1750 (Windows 7).examples"/>
+    <testcase name="getCurrentPath" time="0.002" classname="Chrome 33.0.1750 (Windows 7).getCurrentPath"/>
+    <system-out><![CDATA[
+]]></system-out>
+    <system-err/>
+  </testsuite>
+  <testsuite name="Firefox 27.0.0 (Windows 7)" package="" timestamp="2014-04-10T08:43:51" id="0" hostname="C31C05B08799601" tests="2" errors="0" failures="0" time="0.003">
+    <properties>
+      <property name="browser.fullName" value="Mozilla/5.0 (Windows NT 6.1; WOW64; rv:27.0) Gecko/20100101 Firefox/27.0"/>
+    </properties>
+    <testcase name="toBe相当于===" time="0.002" classname="Firefox 27.0.0 (Windows 7).examples"/>
+    <testcase name="getCurrentPath" time="0.001" classname="Firefox 27.0.0 (Windows 7).getCurrentPath"/>
+    <system-out><![CDATA[
+]]></system-out>
+    <system-err/>
+  </testsuite>
+</testsuites>
